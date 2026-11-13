@@ -1,6 +1,14 @@
 import React from 'react';
-import {ActivityIndicator, Pressable, StyleSheet, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {tabletWidth} from '@constants/layout';
 import {theme} from '@constants/theme';
 
 type WizardFooterProps = {
@@ -25,13 +33,21 @@ export function WizardFooter({
   onSubmit,
 }: WizardFooterProps) {
   const insets = useSafeAreaInsets();
+  const {width} = useWindowDimensions();
+  const isTablet = width >= tabletWidth;
 
   return (
-    <View style={[styles.footer, {paddingBottom: Math.max(insets.bottom, 12)}]}>
+    <View
+      style={[
+        styles.footer,
+        isTablet ? styles.footerTablet : null,
+        {paddingBottom: Math.max(insets.bottom, 12)},
+      ]}>
       {isDraftSaved ? (
         <Text style={styles.saved}>Draft saved on this device</Text>
       ) : null}
-      <View style={styles.secondaryRow}>
+      <View style={isTablet ? styles.tabletActions : undefined}>
+      <View style={[styles.secondaryRow, isTablet ? styles.secondaryRowTablet : null]}>
         <Pressable
           accessibilityRole="button"
           accessibilityState={{disabled: previousDisabled}}
@@ -94,6 +110,7 @@ export function WizardFooter({
           <Text style={styles.primaryLabel}>Next</Text>
         </Pressable>
       )}
+      </View>
     </View>
   );
 }
@@ -106,6 +123,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.md,
     gap: theme.spacing.sm,
+  },
+  footerTablet: {
+    paddingHorizontal: theme.spacing.xl,
+  },
+  tabletActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing.md,
+  },
+  secondaryRowTablet: {
+    flexGrow: 0,
+    flexBasis: 360,
+    maxWidth: 420,
   },
   saved: {
     color: theme.colors.success,
@@ -144,7 +175,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
     gap: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    minWidth: 220,
   },
   primaryPressed: {
     backgroundColor: theme.colors.primaryPressed,

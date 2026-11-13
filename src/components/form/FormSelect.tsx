@@ -172,6 +172,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
     maxHeight: '75%',
     backgroundColor: theme.colors.white,
     borderTopLeftRadius: 20,

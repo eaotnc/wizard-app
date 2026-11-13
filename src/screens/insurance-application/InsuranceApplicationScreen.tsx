@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import {FormProvider, useForm} from 'react-hook-form';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {tabletWidth} from '@constants/layout';
 import {theme} from '@constants/theme';
 import {WizardFooter} from '@components/wizard/WizardFooter';
 import {WizardStepper} from '@components/wizard/WizardStepper';
@@ -27,13 +28,11 @@ import {
 } from './types/insurance-application.type';
 import {wizardResolver} from './utils/validation';
 
-const WIDE_LAYOUT_WIDTH = 720;
-
 function WizardLayout() {
   const wizard = useInsuranceWizard();
   const insets = useSafeAreaInsets();
   const {width} = useWindowDimensions();
-  const isWide = width >= WIDE_LAYOUT_WIDTH;
+  const isTablet = width >= tabletWidth;
   const currentMeta = STEP_META.find(step => step.id === wizard.currentStep);
 
   if (wizard.isSubmitted) {
@@ -57,7 +56,7 @@ function WizardLayout() {
         barStyle="dark-content"
         backgroundColor={theme.colors.background}
       />
-      <View style={styles.header}>
+      <View style={[styles.header, isTablet ? styles.headerTablet : null]}>
         <Text style={styles.title}>Insurance Application</Text>
         <Text style={styles.progress}>
           Step {wizard.currentStep} of 3
@@ -67,10 +66,10 @@ function WizardLayout() {
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.body, isWide ? styles.bodyWide : null]}>
-          <View style={isWide ? styles.sidebar : null}>
+        <View style={[styles.body, isTablet ? styles.bodyWide : null]}>
+          <View style={isTablet ? styles.sidebar : null}>
             <WizardStepper
-              variant={isWide ? 'vertical' : 'horizontal'}
+              variant={isTablet ? 'vertical' : 'horizontal'}
               steps={STEP_META}
               currentStep={wizard.currentStep}
               completedSteps={wizard.completedSteps}
@@ -83,7 +82,10 @@ function WizardLayout() {
           </View>
           <ScrollView
             style={styles.flex}
-            contentContainerStyle={styles.content}
+            contentContainerStyle={[
+              styles.content,
+              isTablet ? styles.contentTablet : null,
+            ]}
             keyboardShouldPersistTaps="handled"
             automaticallyAdjustKeyboardInsets>
             {wizard.currentStep === 1 ? <Step1ApplicantView /> : null}
@@ -141,6 +143,10 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.md,
     gap: theme.spacing.xs,
   },
+  headerTablet: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.sm,
+  },
   title: {
     color: theme.colors.text,
     fontSize: 24,
@@ -160,11 +166,17 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.sm,
   },
   sidebar: {
-    width: 280,
+    width: 300,
   },
   content: {
     padding: theme.spacing.lg,
     gap: theme.spacing.lg,
     paddingBottom: theme.spacing.xl,
+  },
+  contentTablet: {
+    width: '100%',
+    maxWidth: 880,
+    alignSelf: 'center',
+    paddingHorizontal: theme.spacing.xl,
   },
 });

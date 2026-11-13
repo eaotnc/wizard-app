@@ -1,6 +1,7 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 import {useFormContext, useWatch} from 'react-hook-form';
+import {expandedWidth} from '@constants/layout';
 import {theme} from '@constants/theme';
 import {
   durationOptions,
@@ -61,9 +62,25 @@ function displayText(value: string) {
   return trimmed.length > 0 ? trimmed : '—';
 }
 
-function SummaryRow({label, value}: {label: string; value: string}) {
+function SummaryRow({
+  label,
+  value,
+  full = false,
+}: {
+  label: string;
+  value: string;
+  full?: boolean;
+}) {
+  const {width} = useWindowDimensions();
+  const columns = width >= expandedWidth;
+
   return (
-    <View style={styles.row}>
+    <View
+      style={[
+        styles.row,
+        columns && !full ? styles.rowHalf : null,
+        columns && full ? styles.rowFull : null,
+      ]}>
       <Text style={styles.rowLabel}>{label}</Text>
       <Text style={styles.rowValue}>{value}</Text>
     </View>
@@ -77,6 +94,9 @@ export function ApplicationSummary() {
   const plan = useWatch({control, name: 'insurancePlan'});
   const beneficiary = useWatch({control, name: 'beneficiary'});
 
+  const {width} = useWindowDimensions();
+  const columns = width >= expandedWidth;
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>Application Summary</Text>
@@ -84,6 +104,7 @@ export function ApplicationSummary() {
         Review the applicant and insurance details before you confirm.
       </Text>
 
+      <View style={columns ? styles.grid : styles.stack}>
       <Text style={styles.groupTitle}>Applicant</Text>
       <SummaryRow
         label="Name"
@@ -114,7 +135,11 @@ export function ApplicationSummary() {
         value={displayText(contact?.mobilePhone ?? '')}
       />
       <SummaryRow label="Email" value={displayText(contact?.email ?? '')} />
-      <SummaryRow label="Address" value={displayText(contact?.address ?? '')} />
+      <SummaryRow
+        label="Address"
+        full
+        value={displayText(contact?.address ?? '')}
+      />
       <SummaryRow
         label="Province"
         value={displayText(contact?.province ?? '')}
@@ -157,6 +182,7 @@ export function ApplicationSummary() {
         label="Beneficiary Phone"
         value={displayText(beneficiary?.phoneNumber ?? '')}
       />
+      </View>
     </View>
   );
 }
@@ -183,13 +209,29 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   groupTitle: {
+    width: '100%',
     color: theme.colors.primary,
     fontSize: 14,
     fontWeight: '700',
     marginTop: theme.spacing.sm,
   },
+  stack: {
+    gap: theme.spacing.sm,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: theme.spacing.sm,
+  },
   row: {
     gap: 2,
+  },
+  rowHalf: {
+    width: '48%',
+  },
+  rowFull: {
+    width: '100%',
   },
   rowLabel: {
     color: theme.colors.textMuted,

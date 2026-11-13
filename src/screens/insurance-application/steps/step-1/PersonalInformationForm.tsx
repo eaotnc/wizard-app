@@ -2,6 +2,7 @@ import React, {useMemo} from 'react';
 import {FormDatePicker} from '@components/form/FormDatePicker';
 import {FormInput} from '@components/form/FormInput';
 import {FormRadioGroup} from '@components/form/FormRadioGroup';
+import {FormRow} from '@components/form/FormRow';
 import {FormSection} from '@components/form/FormSection';
 import {FormSelect} from '@components/form/FormSelect';
 import {genderOptions, titleOptions} from '../../constants/options';
@@ -22,38 +23,42 @@ export function PersonalInformationForm() {
         options={titleOptions}
         placeholder="Select title"
       />
-      <FormInput<InsuranceApplicationForm>
-        name="personalInformation.firstName"
-        label="First Name"
-        required
-        autoCapitalize="words"
-        autoCorrect={false}
-        placeholder="First name"
-      />
-      <FormInput<InsuranceApplicationForm>
-        name="personalInformation.lastName"
-        label="Last Name"
-        required
-        autoCapitalize="words"
-        autoCorrect={false}
-        placeholder="Last name"
-      />
-      <FormInput<InsuranceApplicationForm>
-        name="personalInformation.nationalId"
-        label="National ID"
-        required
-        keyboardType="number-pad"
-        maxLength={13}
-        autoCorrect={false}
-        placeholder="13 digits"
-      />
-      <FormDatePicker<InsuranceApplicationForm>
-        name="personalInformation.dateOfBirth"
-        label="Date of Birth"
-        required
-        fallbackDate={defaultBirthDate}
-        maximumDate={today}
-      />
+      <FormRow>
+        <FormInput<InsuranceApplicationForm>
+          name="personalInformation.firstName"
+          label="First Name"
+          required
+          autoCapitalize="words"
+          autoCorrect={false}
+          placeholder="First name"
+        />
+        <FormInput<InsuranceApplicationForm>
+          name="personalInformation.lastName"
+          label="Last Name"
+          required
+          autoCapitalize="words"
+          autoCorrect={false}
+          placeholder="Last name"
+        />
+      </FormRow>
+      <FormRow>
+        <FormInput<InsuranceApplicationForm>
+          name="personalInformation.nationalId"
+          label="National ID"
+          required
+          keyboardType="number-pad"
+          maxLength={13}
+          autoCorrect={false}
+          placeholder="13 digits"
+        />
+        <FormDatePicker<InsuranceApplicationForm>
+          name="personalInformation.dateOfBirth"
+          label="Date of Birth"
+          required
+          fallbackDate={defaultBirthDate}
+          maximumDate={today}
+        />
+      </FormRow>
       <FormRadioGroup<InsuranceApplicationForm>
         name="personalInformation.gender"
         label="Gender"
