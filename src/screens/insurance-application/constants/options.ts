@@ -1,8 +1,7 @@
-import {durationValues} from '../schemas/insurance.schema';
-import {genderValues, titleValues} from '../schemas/personal.schema';
 import {relationshipValues} from '../schemas/beneficiary.schema';
 import {yesNoValues} from '../schemas/health.schema';
-import {planValues} from '../schemas/insurance.schema';
+import {durationValues, planValues} from '../schemas/insurance.schema';
+import {genderValues, titleValues} from '../schemas/personal.schema';
 
 export type LabeledOption<T extends string> = {
   label: string;

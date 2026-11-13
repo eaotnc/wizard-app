@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import {useWatch} from 'react-hook-form';
+import {useFormContext, useWatch} from 'react-hook-form';
 import {theme} from '@constants/theme';
 import {
   durationOptions,
@@ -71,14 +71,11 @@ function SummaryRow({label, value}: {label: string; value: string}) {
 }
 
 export function ApplicationSummary() {
-  const personal = useWatch<InsuranceApplicationForm>({
-    name: 'personalInformation',
-  });
-  const contact = useWatch<InsuranceApplicationForm>({
-    name: 'contactInformation',
-  });
-  const plan = useWatch<InsuranceApplicationForm>({name: 'insurancePlan'});
-  const beneficiary = useWatch<InsuranceApplicationForm>({name: 'beneficiary'});
+  const {control} = useFormContext<InsuranceApplicationForm>();
+  const personal = useWatch({control, name: 'personalInformation'});
+  const contact = useWatch({control, name: 'contactInformation'});
+  const plan = useWatch({control, name: 'insurancePlan'});
+  const beneficiary = useWatch({control, name: 'beneficiary'});
 
   return (
     <View style={styles.card}>

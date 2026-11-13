@@ -17,10 +17,24 @@ type InsuranceApplicationState = {
   setCurrentStep: (step: WizardStep) => void;
   completeStep: (step: WizardStep) => void;
   invalidateNextSteps: (step: WizardStep) => void;
-  saveDraft: (draft: InsuranceApplicationForm) => void;
+  saveDraft: (
+    draft: InsuranceApplicationForm,
+    options?: {notify?: boolean},
+  ) => void;
   resetApplication: () => void;
   setSubmitting: (isSubmitting: boolean) => void;
 };
+
+function cloneDraft(draft: InsuranceApplicationForm): InsuranceApplicationForm {
+  return {
+    personalInformation: {...draft.personalInformation},
+    contactInformation: {...draft.contactInformation},
+    insurancePlan: {...draft.insurancePlan},
+    beneficiary: {...draft.beneficiary},
+    healthInformation: {...draft.healthInformation},
+    confirmation: {...draft.confirmation},
+  };
+}
 
 const initialState = {
   currentStep: 1 as WizardStep,
@@ -56,8 +70,11 @@ export const useInsuranceApplicationStore =
               completed => completed <= step,
             ),
           })),
-        saveDraft: applicationDraft =>
-          set({applicationDraft, isDraftSaved: true}),
+        saveDraft: (applicationDraft, options) =>
+          set({
+            applicationDraft: cloneDraft(applicationDraft),
+            isDraftSaved: options?.notify ?? true,
+          }),
         resetApplication: () =>
           set({
             currentStep: 1,

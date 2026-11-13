@@ -26,7 +26,7 @@ function createReferenceNumber() {
 }
 
 export function useInsuranceWizard() {
-  const {trigger, getValues, reset, watch} =
+  const {handleSubmit, getValues, reset, watch} =
     useFormContext<InsuranceApplicationForm>();
   const currentStep = useInsuranceApplicationStore(state => state.currentStep);
   const completedSteps = useInsuranceApplicationStore(
@@ -41,9 +41,6 @@ export function useInsuranceWizard() {
     state => state.setCurrentStep,
   );
   const completeStep = useInsuranceApplicationStore(state => state.completeStep);
-  const invalidateNextSteps = useInsuranceApplicationStore(
-    state => state.invalidateNextSteps,
-  );
   const saveDraft = useInsuranceApplicationStore(state => state.saveDraft);
   const resetApplication = useInsuranceApplicationStore(
     state => state.resetApplication,
@@ -57,6 +54,7 @@ export function useInsuranceWizard() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [referenceNumber, setReferenceNumber] = useState('');
   const didRestoreDraft = useRef(false);
+  const isMoving = useRef(false);
 
   useEffect(() => {
     const unsubscribe = useInsuranceApplicationStore.persist.onFinishHydration(
@@ -104,23 +102,23 @@ export function useInsuranceWizard() {
     return () => subscription.unsubscribe();
   }, [watch]);
 
-  const handleNext = async () => {
-    if (isSubmitting) {
+  const handleNext = () => {
+    if (isSubmitting || isMoving.current || currentStep >= 3) {
       return;
     }
 
+    isMoving.current = true;
     setActiveSchemaForStep(currentStep);
-    const valid = await trigger();
-    if (!valid) {
-      return;
-    }
-
-    const nextStep = (currentStep + 1) as WizardStep;
-    saveDraft(getValues());
-    completeStep(currentStep);
-    if (currentStep < 3 && isWizardStep(nextStep)) {
-      setCurrentStep(nextStep);
-    }
+    void handleSubmit(values => {
+      const nextStep = (currentStep + 1) as WizardStep;
+      saveDraft(values, {notify: false});
+      completeStep(currentStep);
+      if (isWizardStep(nextStep)) {
+        setCurrentStep(nextStep);
+      }
+    })().finally(() => {
+      isMoving.current = false;
+    });
   };
 
   const handlePrevious = () => {
@@ -154,37 +152,41 @@ export function useInsuranceWizard() {
     setCurrentStep(step);
   };
 
-  const handleSubmitApplication = async () => {
-    if (isSubmitting) {
+  const handleSubmitApplication = () => {
+    if (isSubmitting || isMoving.current) {
       return;
     }
 
-    const parsed = applicationSchema.safeParse(getValues());
+    isMoving.current = true;
     setActiveSchemaForSubmit();
-    const valid = await trigger();
-    if (!parsed.success || !valid) {
-      const step = parsed.success
-        ? currentStep
-        : firstInvalidStepFromIssues(parsed.error.issues);
-      if (step && step !== currentStep) {
-        setCurrentStep(step);
-      } else {
+    void handleSubmit(
+      async values => {
+        setSubmitting(true);
+        try {
+          await new Promise<void>(resolve => {
+            setTimeout(resolve, SUBMIT_DELAY_MS);
+          });
+          saveDraft(values, {notify: false});
+          setReferenceNumber(createReferenceNumber());
+          setIsSubmitted(true);
+        } finally {
+          setSubmitting(false);
+        }
+      },
+      () => {
+        const parsed = applicationSchema.safeParse(getValues());
+        if (!parsed.success) {
+          const step = firstInvalidStepFromIssues(parsed.error.issues);
+          if (step && step !== currentStep) {
+            setCurrentStep(step);
+            return;
+          }
+        }
         setActiveSchemaForStep(currentStep);
-      }
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await new Promise<void>(resolve => {
-        setTimeout(resolve, SUBMIT_DELAY_MS);
-      });
-      saveDraft(getValues());
-      setReferenceNumber(createReferenceNumber());
-      setIsSubmitted(true);
-    } finally {
-      setSubmitting(false);
-    }
+      },
+    )().finally(() => {
+      isMoving.current = false;
+    });
   };
 
   const startNewApplication = () => {
